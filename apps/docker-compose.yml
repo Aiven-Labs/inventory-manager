@@ -1,6 +1,6 @@
 services:
-  mgr-db:
-    image: postgres:16-alpine
+  inventory-manager-db:
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_USER: mgr_user
@@ -9,40 +9,40 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U mgr_user -d mgr_db -h localhost"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  mgr-queue:
-    image: redis:7-alpine
+  inventory-manager-queue:
+    image: valkey/valkey:9-alpine
     restart: unless-stopped
     ports:
       - "6380:6379"
     volumes:
       - queuedata:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "valkey-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  mgr-web-cache:
-    image: redis:7-alpine
+  inventory-manager-web-cache:
+    image: valkey/valkey:9-alpine
     restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - web-cachedata:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "valkey-cli", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  mgr-web:
+  inventory-manager-web:
     build:
       context: ./web
       dockerfile: Dockerfile
@@ -50,32 +50,32 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://mgr_user:mgr_pass@mgr-db:5432/mgr_db
-      CACHE_REDIS_URL: redis://mgr-web-cache:6379
-      QUEUE_REDIS_URL: redis://mgr-queue:6379
+      DATABASE_URL: postgresql://mgr_user:mgr_pass@inventory-manager-db:5432/mgr_db
+      CACHE_REDIS_URL: redis://inventory-manager-web-cache:6379
+      QUEUE_REDIS_URL: redis://inventory-manager-queue:6379
       SERVER_PORT: "3000"
       NODE_ENV: production
     depends_on:
-      mgr-db:
+      inventory-manager-db:
         condition: service_healthy
-      mgr-web-cache:
+      inventory-manager-web-cache:
         condition: service_healthy
-      mgr-queue:
+      inventory-manager-queue:
         condition: service_healthy
 
-  mgr-emissions-tracker:
+  inventory-manager-emissions-tracker:
     build:
       context: ./emissions-tracker
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://mgr_user:mgr_pass@mgr-db:5432/mgr_db
-      QUEUE_REDIS_URL: redis://mgr-queue:6379
+      DATABASE_URL: postgresql://mgr_user:mgr_pass@inventory-manager-db:5432/mgr_db
+      QUEUE_REDIS_URL: redis://inventory-manager-queue:6379
       PORT: "8080"
     depends_on:
-      mgr-db:
+      inventory-manager-db:
         condition: service_healthy
-      mgr-queue:
+      inventory-manager-queue:
         condition: service_healthy
 
 volumes:
