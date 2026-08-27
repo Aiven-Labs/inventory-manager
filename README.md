@@ -164,8 +164,8 @@ for the most up-to-date  information.
        probably want all of the application services in the same cloud and
        region.
 
-  - **or** click the paired arrows icon
-   ![paired arrows](images/paired-arrows-icon.png), and choose an existing 
+   - **or** click the paired arrows icon
+    ![paired arrows](images/paired-arrows-icon.png), and choose an existing 
     Aiven service.
 
 
