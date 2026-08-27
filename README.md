@@ -205,7 +205,7 @@ launch. To re-seed it manually:
 
 ## Environment variables
 
-These are configured automatically when using Docker/Podman Compose. Only set them manually for local development.
+These are configured automatically when using Docker/Podman Compose, or when deploying with Aiven Runtime. Only set them manually for local development.
 
 | Variable | Description                             | Default (Compose) |
 |---|-----------------------------------------|---|
